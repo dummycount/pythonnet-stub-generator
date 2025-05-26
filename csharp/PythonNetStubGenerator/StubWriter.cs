@@ -250,9 +250,7 @@ namespace PythonNetStubGenerator
                 return;
             }
 
-            var className = classNameOverride ?? type.CleanName();
-
-
+            var className = classNameOverride ?? PythonTypes.SafePythonName(type.CleanName());
 
             var typeArguments = new List<Type>();
 

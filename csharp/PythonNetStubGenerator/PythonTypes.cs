@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Reflection;
 
 namespace PythonNetStubGenerator
@@ -13,6 +14,8 @@ namespace PythonNetStubGenerator
         private static readonly HashSet<Type> CurrentTypes = new HashSet<Type>();
         private static readonly HashSet<string> CurrentNamespaces = new HashSet<string>();
         private static readonly HashSet<Type> OverloadedNonGenericTypes = new HashSet<Type>();
+
+        private static readonly Regex NonWordChars = new Regex(@"[\W]+", RegexOptions.Compiled);
 
 
         public static void CacheOverloadedNonGenericTypes(IEnumerable<Type> stubTypes)
@@ -97,6 +100,9 @@ namespace PythonNetStubGenerator
             if (s == "from") return "from_";
             if (s == "del") return "del_";
             if (s == "None") return "None_";
+
+            s = NonWordChars.Replace(s, "_");
+
             return s;
         }
 
@@ -162,7 +168,7 @@ namespace PythonNetStubGenerator
             }
 
 
-            var cleanName = t.CleanName();
+            var cleanName = SafePythonName(t.CleanName());
 
 
             if (withGenericParams)
