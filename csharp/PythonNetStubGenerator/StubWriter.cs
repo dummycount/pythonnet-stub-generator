@@ -827,6 +827,25 @@ namespace PythonNetStubGenerator
 
         }
 
+        private static string GetMethodReturnType(MethodBase method)
+        {
+            var returnType = method is MethodInfo mi ? mi.ReturnType.ToPythonType() : "None";
+			var outParameters = method.GetParameters().Where(it => it.IsOut).ToList();
+
+            if (outParameters.Count == 0)
+            {
+                return returnType;
+            }
+
+            var outParameterTypes = outParameters.Select(it => it.ParameterType.GetElementType().ToPythonType()).CommaJoin();
+
+            if (returnType != "None")
+            {
+                outParameterTypes = $"{returnType}, {outParameterTypes}";
+            }
+
+            return $"typing.Tuple[{outParameterTypes}]";
+		}
 
         private static bool WriteSimpleMethod(TextWriter tw, MethodBase method, bool isOverload = false)
         {
@@ -847,8 +866,7 @@ namespace PythonNetStubGenerator
                 }
             }
 
-            var returnType = method is MethodInfo mi ? mi.ReturnType.ToPythonType() : "None";
-
+            var returnType = GetMethodReturnType(method);
             var parameters = GetParameters(method, !isStatic);
 
 
