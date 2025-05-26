@@ -282,9 +282,56 @@ namespace PythonNetStubGenerator
 
         }
 
+        private static (string, string) GetIndexParameter(PropertyInfo indexer)
+        {
+            var parameters = indexer.GetIndexParameters();
+            if (parameters.Length == 1)
+            {
+                var index = parameters[0];
+                return (index.Name, index.ParameterType.ToPythonParameterType());
+            }
+
+            var names = parameters.Select(it => it.Name);
+            var types = parameters.Select(it => it.ParameterType.ToPythonParameterType());
+
+            return (string.Join("_", names), $"typing.Tuple[{types.CommaJoin()}]");
+        }
+
         private static bool WriteIndexers(TextWriter tw, Type type)
         {
-            return false;
+            var indexers = type.GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)
+				.Where(it => it.GetIndexParameters().Length > 0)
+				.OrderBy(it => it.Name)
+				.ToArray();
+
+            var hasGetOverloads = indexers.Count(it => it.CanRead) > 1;
+            var hasSetOverloads = indexers.Count(it => it.CanWrite) > 1;
+
+            foreach (var indexer in indexers)
+            {
+                var (indexName, indexType) = GetIndexParameter(indexer);
+				var valueType = indexer.PropertyType.ToPythonType();
+
+				if (indexer.CanRead)
+                {
+                    if (hasGetOverloads)
+                    {
+                        tw.Indent().WriteLine("@typing.overload");
+                    }
+                    tw.Indent().WriteLine($"def __getitem__(self, {indexName}: {indexType}) -> {valueType}: ...");
+                }
+
+                if (indexer.CanWrite)
+                {
+                    if (hasSetOverloads)
+                    {
+					    tw.Indent().WriteLine("@typing.overload");
+                    }
+					tw.Indent().WriteLine($"def __setitem__(self, {indexName}: {indexType}, value: {valueType}) -> None: ...");
+				}
+            }
+
+			return indexers.Length > 0;
         }
 
         private static bool WriteNestedTypes(TextWriter tw, Type stubType)
@@ -561,6 +608,7 @@ namespace PythonNetStubGenerator
         private static bool WriteProperties(Type stubType, TextWriter tw)
         {
             var properties = stubType.GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)
+                .Where(it => it.GetIndexParameters().Length == 0)
                 .OrderBy(it => it.Name)
                 .ToArray();
 
