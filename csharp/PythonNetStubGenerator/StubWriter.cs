@@ -918,7 +918,7 @@ namespace PythonNetStubGenerator
             string GetParameter(ParameterInfo it)
             {
                 var name = PythonTypes.SafePythonName(it.Name);
-                var type = it.ParameterType.ToPythonType();
+                var type = it.ParameterType.ToPythonParameterType();
                 var defaultValue = it.HasDefaultValue ? " = ..." : "";
                 return $"{name}: {type}{defaultValue}";
             }

@@ -127,6 +127,19 @@ namespace PythonNetStubGenerator
             return name;
         }
 
+        public static string ToPythonParameterType(this Type t)
+        {
+            var types = new List<string>{ t.ToPythonType() };
+
+            // Any Python sequence can be implicitly converted to an array
+            if (t.IsArray)
+            {
+                types.Add($"typing.Sequence[{t.GetElementType().ToPythonType()}]");
+            }
+
+            return types.Count == 1 ? types[0] : $"typing.Union[{types.CommaJoin()}]";
+        }
+
 
         public static string ToPythonType(this Type t, bool withGenericParams = true)
         {
