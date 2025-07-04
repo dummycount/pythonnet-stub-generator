@@ -144,7 +144,6 @@ namespace PythonNetStubGenerator
         public static string ToPythonType(this Type t, bool withGenericParams = true)
         {
             if (t == null || t == typeof(void)) return "None";
-            if (t == typeof(object)) return "typing.Any";
             if (t == typeof(string)) return "str";
             if (t == typeof(char)) return "str";
             if (t == typeof(double)) return "float";
@@ -159,7 +158,6 @@ namespace PythonNetStubGenerator
             if (t == typeof(ushort)) return "int";
             if (t == typeof(ulong)) return "int";
             if (t == typeof(IntPtr)) return "int";
-            if (t == typeof(Type)) return "typing.Type[typing.Any]";
             if (t == typeof(Array))
             {
                 AddArrayDependency(false);

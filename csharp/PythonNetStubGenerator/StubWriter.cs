@@ -414,7 +414,7 @@ namespace PythonNetStubGenerator
 
             var baseType = type.BaseType;
 
-            if (baseType != null && baseType != typeof(object) && baseType != typeof(ValueType))
+            if (baseType != null)
             {
                 var baseName = baseType.ToPythonType();
                 if (baseType.IsOverloadedNonGenericType()) baseName += "_0";
